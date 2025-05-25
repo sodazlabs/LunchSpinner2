@@ -4,6 +4,42 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>음식 메뉴 룰렛</title>
+    
+    <!-- PWA 메타 태그 -->
+    <meta name="description" content="오늘 먹을 메뉴를 재미있게 정해보세요! 한식, 중식, 양식, 일식, 패스트푸드 카테고리별 룰렛">
+    <meta name="keywords" content="음식, 메뉴, 룰렛, 점심, 저녁, 한식, 중식, 양식, 일식, 패스트푸드">
+    <meta name="author" content="FoodRoulette">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="음식룰렛">
+    <meta name="mobile-web-app-capable" content="yes">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://sodalabs.github.io/LunchSpinner2/">
+    <meta property="og:title" content="음식 메뉴 룰렛 - 오늘 뭐 먹을까?">
+    <meta property="og:description" content="메뉴 고민 끝! 재미있는 룰렛으로 오늘의 메뉴를 정해보세요">
+    <meta property="og:image" content="https://sodalabs.github.io/LunchSpinner2/app_og_image.png">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://sodalabs.github.io/LunchSpinner2/">
+    <meta property="twitter:title" content="음식 메뉴 룰렛 - 오늘 뭐 먹을까?">
+    <meta property="twitter:description" content="메뉴 고민 끝! 재미있는 룰렛으로 오늘의 메뉴를 정해보세요">
+    <meta property="twitter:image" content="https://sodalabs.github.io/LunchSpinner2/app_og_image.png">
+    
+    <!-- 아이콘 및 매니페스트 -->
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" type="image/png" sizes="192x192" href="/app_icon.png">
+    <link rel="apple-touch-icon" href="/app_icon.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/app_icon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/app_icon.png">
+    <link rel="apple-touch-icon" sizes="167x167" href="/app_icon.png">
+    
+    <!-- 스플래시 스크린 (iOS) -->
+    <link rel="apple-touch-startup-image" href="/app_icon.png">
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -112,6 +148,21 @@
         }
         .result-popup h2 { font-size: 1.4rem; margin-bottom: 15px; font-weight: 700; }
         .result-popup p { font-size: 1.1rem; margin: 0; line-height: 1.4; }
+        
+        /* PWA 설치 배너 */
+        .install-banner {
+            position: fixed; bottom: 20px; left: 20px; right: 20px; background: white;
+            color: #333; padding: 15px 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            display: none; align-items: center; justify-content: space-between; z-index: 3000;
+        }
+        .install-banner button {
+            background: #667eea; color: white; border: none; padding: 8px 16px;
+            border-radius: 8px; cursor: pointer; font-weight: 600;
+        }
+        .install-banner .close-btn {
+            background: transparent; color: #999; padding: 4px;
+        }
+        
         @keyframes popupShow { 
             from { transform: translate(-50%, -50%) scale(0.8); opacity: 0; } 
             to { transform: translate(-50%, -50%) scale(1); opacity: 1; } 
@@ -129,6 +180,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1>🍽️ 오늘 뭐 먹을까?</h1>
@@ -170,6 +222,18 @@
         <p id="resultText"></p>
     </div>
 
+    <!-- PWA 설치 배너 -->
+    <div class="install-banner" id="installBanner">
+        <div>
+            <strong>앱으로 설치하기</strong>
+            <div style="font-size: 0.9rem; color: #666; margin-top: 4px;">홈 화면에 추가해서 더 편리하게!</div>
+        </div>
+        <div>
+            <button id="installBtn">설치</button>
+            <button class="close-btn" id="closeBanner">✕</button>
+        </div>
+    </div>
+
     <script>
         let savedData = null;
         const foodData = {
@@ -181,6 +245,9 @@
         };
         const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E9'];
         let currentCategory = 'korean', isSpinning = false, currentRotation = 0;
+
+        // PWA 관련 변수
+        let deferredPrompt;
 
         function saveData() {
             try {
@@ -290,7 +357,8 @@
             if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
         }
 
-        function createPieSlice(centerX, centerY, radius, startAngle, endAngle, color, text) {
+
+     function createPieSlice(centerX, centerY, radius, startAngle, endAngle, color, text) {
             const startRad = startAngle * Math.PI / 180;
             const endRad = endAngle * Math.PI / 180;
             const x1 = centerX + radius * Math.cos(startRad);
@@ -382,8 +450,8 @@
                 }
             });
         }
-
-        function openMenuEditor() {
+        
+      function openMenuEditor() {
             const names = { korean: '한식', chinese: '중식', western: '양식', japanese: '일식', fast: '패스트푸드' };
             document.getElementById('editorTitle').textContent = `${names[currentCategory]} 메뉴 편집`;
             const inputs = document.getElementById('menuInputs');
@@ -417,8 +485,68 @@
             if (navigator.vibrate) navigator.vibrate(30);
         }
 
+        // PWA 설치 관련 함수
+        function showInstallBanner() {
+            const banner = document.getElementById('installBanner');
+            const hasShownBanner = localStorage.getItem('installBannerShown');
+            
+            if (!hasShownBanner && deferredPrompt) {
+                banner.style.display = 'flex';
+            }
+        }
+
+        function hideInstallBanner() {
+            const banner = document.getElementById('installBanner');
+            banner.style.display = 'none';
+            localStorage.setItem('installBannerShown', 'true');
+        }
+
+        // URL 파라미터로 카테고리 설정
+        function setCategoryFromURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const category = urlParams.get('category');
+            if (category && foodData[category]) {
+                currentCategory = category;
+                document.querySelectorAll('.category-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                    if (btn.dataset.category === category) {
+                        btn.classList.add('active');
+                    }
+                });
+            }
+        }  
         document.addEventListener('DOMContentLoaded', () => {
             loadData();
+            setCategoryFromURL();
+            
+            // PWA 설치 이벤트 리스너
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                setTimeout(showInstallBanner, 3000); // 3초 후 배너 표시
+            });
+
+            // 앱 설치 완료 감지
+            window.addEventListener('appinstalled', () => {
+                console.log('PWA가 설치되었습니다!');
+                hideInstallBanner();
+            });
+
+            // 설치 버튼 클릭
+            document.getElementById('installBtn').addEventListener('click', async () => {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    const { outcome } = await deferredPrompt.userChoice;
+                    if (outcome === 'accepted') {
+                        console.log('사용자가 PWA 설치를 승인했습니다');
+                    }
+                    deferredPrompt = null;
+                    hideInstallBanner();
+                }
+            });
+
+            // 설치 배너 닫기
+            document.getElementById('closeBanner').addEventListener('click', hideInstallBanner);
             
             document.getElementById('editMenuBtn').onclick = openMenuEditor;
             document.getElementById('addItemBtn').onclick = () => {
@@ -443,6 +571,19 @@
             document.getElementById('spinButton').onclick = spinRoulette;
             createRoulette();
         });
+
+        // 서비스 워커 등록
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then((registration) => {
+                        console.log('ServiceWorker 등록 성공:', registration.scope);
+                    })
+                    .catch((error) => {
+                        console.log('ServiceWorker 등록 실패:', error);
+                    });
+            });
+        }
     </script>
 </body>
 </html>
