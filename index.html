@@ -2,128 +2,144 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>음식 메뉴 룰렛</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
-            font-family: Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            padding: 20px;
+            min-height: 100vh; color: white; padding: 15px; overflow-x: hidden;
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
         }
-        .container { text-align: center; max-width: 800px; width: 100%; }
-        h1 { font-size: 2.5rem; margin-bottom: 30px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
-        .category-buttons { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px; }
+        .container { text-align: center; width: 100%; max-width: 450px; }
+        h1 { font-size: 2rem; margin-bottom: 20px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); font-weight: 800; }
+        .category-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 15px; }
         .category-btn {
-            padding: 12px 24px; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.3);
-            color: white; border-radius: 25px; cursor: pointer; font-size: 1rem; font-weight: bold;
-            transition: all 0.3s ease;
+            padding: 15px 10px; background: rgba(255,255,255,0.15); border: 2px solid rgba(255,255,255,0.2);
+            color: white; border-radius: 20px; cursor: pointer; font-size: 0.95rem; font-weight: 600;
+            transition: all 0.2s ease; touch-action: manipulation; min-height: 55px;
+            display: flex; align-items: center; justify-content: center;
         }
-        .category-btn:hover { background: rgba(255,255,255,0.3); transform: translateY(-2px); }
-        .category-btn.active { background: #ff6b6b; border-color: #ff6b6b; box-shadow: 0 4px 15px rgba(255,107,107,0.4); }
+        .category-btn:active { transform: scale(0.95); }
+        .category-btn.active { 
+            background: #ff6b6b; border-color: #ff6b6b; 
+            box-shadow: 0 4px 15px rgba(255,107,107,0.4); transform: scale(1.02);
+        }
         .edit-menu-btn {
-            padding: 8px 16px; background: rgba(255,255,255,0.3); border: 1px solid rgba(255,255,255,0.5);
-            color: white; border-radius: 15px; cursor: pointer; font-size: 0.9rem; margin-left: 10px;
-            transition: all 0.3s ease;
+            grid-column: 1 / -1; padding: 12px 24px; background: rgba(255,255,255,0.2); 
+            border: 2px solid rgba(255,255,255,0.3); color: white; border-radius: 25px; 
+            cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: all 0.2s ease; 
+            touch-action: manipulation; margin-top: 5px;
         }
-        .edit-menu-btn:hover { background: rgba(255,255,255,0.4); }
-        .roulette-container { position: relative; margin: 40px auto; width: 400px; height: 400px; }
+        .edit-menu-btn:active { transform: scale(0.95); }
+        .roulette-container { 
+            position: relative; margin: 25px auto; 
+            width: min(80vw, 320px); height: min(80vw, 320px); 
+        }
         .roulette-wheel {
             width: 100%; height: 100%; border-radius: 50%; position: relative; overflow: hidden;
-            box-shadow: 0 0 30px rgba(0,0,0,0.3); border: 8px solid white;
+            box-shadow: 0 0 25px rgba(0,0,0,0.3); border: 6px solid white;
         }
         .roulette-svg { width: 100%; height: 100%; transform-origin: center; }
-        .roulette-text { font-family: Arial, sans-serif; font-weight: bold; font-size: 14px; fill: white; text-anchor: middle; dominant-baseline: middle; }
+        .roulette-text { 
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif; 
+            font-weight: 700; font-size: 12px; fill: white; text-anchor: middle; dominant-baseline: middle; 
+        }
         .roulette-center {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 60px; height: 60px; background: white; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center; font-size: 2rem; color: #333;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 10;
+            width: 45px; height: 45px; background: white; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; 
+            font-size: 1.5rem; color: #333; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 10;
         }
         .roulette-pointer {
-            position: absolute; top: -15px; left: 50%; transform: translateX(-50%);
-            width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent;
-            border-top: 30px solid #ff6b6b; z-index: 5; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+            position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+            width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent;
+            border-top: 20px solid #ff6b6b; z-index: 5; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
         }
         .spin-button {
-            padding: 15px 40px; background: linear-gradient(45deg, #ff6b6b, #ff8e53); border: none;
-            color: white; border-radius: 50px; cursor: pointer; font-size: 1.2rem; font-weight: bold;
-            margin-top: 30px; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(255,107,107,0.4);
+            width: 85%; max-width: 300px; height: 60px; 
+            background: linear-gradient(45deg, #ff6b6b, #ff8e53); border: none; color: white; 
+            border-radius: 30px; cursor: pointer; font-size: 1.2rem; font-weight: 700;
+            margin: 25px auto; transition: all 0.2s ease; box-shadow: 0 6px 20px rgba(255,107,107,0.4);
+            touch-action: manipulation; display: block;
         }
-        .spin-button:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255,107,107,0.6); }
+        .spin-button:active { transform: scale(0.95); }
         .spin-button:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
         .menu-editor {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8);
-            display: none; align-items: center; justify-content: center; z-index: 1000;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85);
+            display: none; align-items: flex-start; justify-content: center; z-index: 1000;
+            padding: 20px 15px; overflow-y: auto;
         }
         .editor-modal {
-            background: white; border-radius: 20px; padding: 30px; max-width: 500px; width: 90%;
-            max-height: 80vh; overflow-y: auto; color: #333;
+            background: white; border-radius: 20px; padding: 25px 20px; width: 100%; max-width: 400px;
+            color: #333; margin-top: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
-        .editor-title { font-size: 1.5rem; font-weight: bold; margin-bottom: 20px; text-align: center; color: #333; }
+        .editor-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 20px; text-align: center; color: #333; }
         .menu-item-input {
-            width: 100%; padding: 10px; margin: 5px 0; border: 2px solid #ddd; border-radius: 10px;
-            font-size: 1rem; transition: border-color 0.3s ease;
+            width: 100%; padding: 12px 15px; margin: 8px 0; border: 2px solid #ddd; border-radius: 12px;
+            font-size: 1rem; transition: border-color 0.2s ease; touch-action: manipulation;
         }
         .menu-item-input:focus { outline: none; border-color: #ff6b6b; }
-        .editor-buttons { display: flex; gap: 10px; margin-top: 20px; justify-content: center; }
-        .editor-btn {
-            padding: 10px 20px; border: none; border-radius: 10px; cursor: pointer;
-            font-weight: bold; transition: all 0.3s ease;
+        .editor-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 25px; }
+        .editor-btn { 
+            padding: 14px 20px; border: none; border-radius: 12px; cursor: pointer; 
+            font-weight: 600; font-size: 1rem; transition: all 0.2s ease; touch-action: manipulation;
         }
+        .editor-btn:active { transform: scale(0.95); }
         .save-btn { background: #4CAF50; color: white; }
-        .save-btn:hover { background: #45a049; }
         .cancel-btn { background: #f44336; color: white; }
-        .cancel-btn:hover { background: #da190b; }
-        .add-item-btn { background: #2196F3; color: white; margin-bottom: 10px; }
-        .add-item-btn:hover { background: #1976D2; }
-        .remove-item-btn {
-            position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
-            background: #ff4444; color: white; border: none; border-radius: 50%;
-            width: 25px; height: 25px; cursor: pointer; font-size: 0.8rem;
+        .add-item-btn { 
+            background: #2196F3; color: white; margin-bottom: 15px; width: 100%;
+            padding: 12px; border-radius: 12px; font-size: 1rem; font-weight: 600;
         }
-        .input-container { position: relative; margin-bottom: 10px; }
+        .remove-item-btn {
+            position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+            background: #ff4444; color: white; border: none; border-radius: 50%;
+            width: 30px; height: 30px; cursor: pointer; font-size: 0.9rem; font-weight: 600;
+            touch-action: manipulation;
+        }
+        .remove-item-btn:active { transform: translateY(-50%) scale(0.9); }
+        .input-container { position: relative; margin-bottom: 12px; }
         .result-popup {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: linear-gradient(135deg, #ff6b6b, #ff8e53); color: white; padding: 40px;
-            border-radius: 20px; text-align: center; z-index: 2000; box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-            display: none; animation: popupShow 0.5s ease-out;
+            background: linear-gradient(135deg, #ff6b6b, #ff8e53); color: white; 
+            padding: 30px 25px; border-radius: 20px; text-align: center; z-index: 2000; 
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4); display: none; 
+            animation: popupShow 0.4s ease-out; width: 85%; max-width: 300px;
         }
-        .result-popup h2 { font-size: 2rem; margin-bottom: 15px; }
-        .result-popup p { font-size: 1.5rem; margin-bottom: 20px; }
-        .result-popup button {
-            background: white; color: #ff6b6b; border: none; padding: 12px 24px;
-            border-radius: 25px; font-weight: bold; cursor: pointer; font-size: 1rem;
+        .result-popup h2 { font-size: 1.4rem; margin-bottom: 15px; font-weight: 700; }
+        .result-popup p { font-size: 1.1rem; margin: 0; line-height: 1.4; }
+        @keyframes popupShow { 
+            from { transform: translate(-50%, -50%) scale(0.8); opacity: 0; } 
+            to { transform: translate(-50%, -50%) scale(1); opacity: 1; } 
         }
-        @keyframes popupShow { from { transform: translate(-50%, -50%) scale(0.7); opacity: 0; } to { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
-        @media (max-width: 600px) {
-            .roulette-container { width: 300px; height: 300px; }
-            h1 { font-size: 2rem; }
-            .category-buttons { gap: 10px; }
-            .category-btn { padding: 10px 20px; font-size: 0.9rem; }
-            .editor-modal { padding: 20px; width: 95%; }
-            .result-popup { padding: 30px; margin: 20px; }
+        @media (max-width: 350px) {
+            h1 { font-size: 1.7rem; }
+            .category-btn { font-size: 0.85rem; padding: 12px 8px; }
+            .roulette-container { width: 260px; height: 260px; }
+        }
+        @media (orientation: landscape) and (max-height: 500px) {
+            body { justify-content: center; padding: 10px; }
+            h1 { font-size: 1.5rem; margin-bottom: 15px; }
+            .roulette-container { width: 220px; height: 220px; margin: 15px auto; }
+            .spin-button { height: 50px; margin: 20px auto; font-size: 1.1rem; }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🍽️ 오늘 뭐 먹을까? 🍽️</h1>
-        <div class="category-buttons">
-            <button class="category-btn active" data-category="korean">한식</button>
-            <button class="category-btn" data-category="chinese">중식</button>
-            <button class="category-btn" data-category="western">양식</button>
-            <button class="category-btn" data-category="japanese">일식</button>
-            <button class="category-btn" data-category="fast">패스트푸드</button>
+        <h1>🍽️ 오늘 뭐 먹을까?</h1>
+        
+        <div class="category-grid">
+            <button class="category-btn active" data-category="korean">🥘 한식</button>
+            <button class="category-btn" data-category="chinese">🥡 중식</button>
+            <button class="category-btn" data-category="western">🍝 양식</button>
+            <button class="category-btn" data-category="japanese">🍱 일식</button>
+            <button class="category-btn" data-category="fast">🍔 패스트푸드</button>
+            <button class="edit-menu-btn" id="editMenuBtn">⚙️ 메뉴 편집</button>
         </div>
-        <button class="edit-menu-btn" id="editMenuBtn">메뉴 편집</button>
         
         <div class="roulette-container">
             <div class="roulette-pointer"></div>
@@ -133,197 +149,28 @@
             <div class="roulette-center">🎯</div>
         </div>
         
-        <button class="spin-button" id="spinButton">룰렛 돌리기!</button>
-    </div>
-
-    <div class="result-popup" id="resultPopup">
-        <h2>🎉 결과 발표! 🎉</h2>
-        <p id="resultText">오늘의 메뉴는</p>
-        <button onclick="document.getElementById('resultPopup').style.display='none'">확인</button>
+        <button class="spin-button" id="spinButton">🎰 룰렛 돌리기!</button>
     </div>
 
     <div class="menu-editor" id="menuEditor">
         <div class="editor-modal">
             <h2 class="editor-title" id="editorTitle">메뉴 편집</h2>
-            <button class="editor-btn add-item-btn" id="addItemBtn">+ 메뉴 추가</button>
+            <button class="editor-btn add-item-btn" id="addItemBtn">➕ 메뉴 추가</button>
             <div id="menuInputs"></div>
             <div class="editor-buttons">
-                <button class="editor-btn save-btn" id="saveMenuBtn">저장</button>
-                <button class="editor-btn cancel-btn" id="cancelEditBtn">취소</button>
+                <button class="editor-btn save-btn" id="saveMenuBtn">💾 저장</button>
+                <button class="editor-btn cancel-btn" id="cancelEditBtn">❌ 취소</button>
             </div>
         </div>
     </div>
 
+    <div class="result-popup" id="resultPopup">
+        <h2>🎉 결과 발표!</h2>
+        <p id="resultText"></p>
+    </div>
+
     <script>
-        // 메모리 기반 저장 시스템 (localStorage 대신)
-        let savedFoodData = null;
-        
-        function saveFoodData() {
-            try {
-                // localStorage가 사용 가능한 경우에만 저장
-                if (typeof(Storage) !== "undefined" && !window.location.href.includes('claude.ai')) {
-                    localStorage.setItem('rouletteFoodData', JSON.stringify(foodData));
-                } else {
-                    // 세션 중 메모리에 저장
-                    savedFoodData = JSON.parse(JSON.stringify(foodData));
-                    console.log('Data saved to memory (localStorage not available)');
-                }
-            } catch (e) {
-                // localStorage 실패 시 메모리에 저장
-                savedFoodData = JSON.parse(JSON.stringify(foodData));
-                console.log('localStorage failed, using memory storage');
-            }
-        }
-        
-        function loadFoodData() {
-            try {
-                if (typeof(Storage) !== "undefined" && !window.location.href.includes('claude.ai')) {
-                    const saved = localStorage.getItem('rouletteFoodData');
-                    if (saved) {
-                        const parsedData = JSON.parse(saved);
-                        Object.assign(foodData, parsedData);
-                        return;
-                    }
-                }
-            } catch (e) {
-                console.log('localStorage load failed');
-            }
-            
-            // localStorage 실패 시 메모리에서 로드
-            if (savedFoodData) {
-                Object.assign(foodData, savedFoodData);
-                console.log('Data loaded from memory');
-            }
-        }
-
-        // 효과음 생성 함수 (Web Audio API 사용)
-        function createAudioContext() {
-            return new (window.AudioContext || window.webkitAudioContext)();
-        }
-
-        function playSpinSound() {
-            try {
-                const audioCtx = createAudioContext();
-                const oscillator = audioCtx.createOscillator();
-                const gainNode = audioCtx.createGain();
-                
-                oscillator.connect(gainNode);
-                gainNode.connect(audioCtx.destination);
-                
-                // 회전 소리 (주파수가 점점 낮아짐)
-                oscillator.frequency.setValueAtTime(800, audioCtx.currentTime);
-                oscillator.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + 3);
-                
-                gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 3);
-                
-                oscillator.type = 'sawtooth';
-                oscillator.start();
-                oscillator.stop(audioCtx.currentTime + 3);
-            } catch (e) {
-                console.log('Audio not supported');
-            }
-        }
-
-        function playResultSound() {
-            try {
-                // Freesound.org의 무료 축하 효과음들 (CDN 제공)
-                const celebrationSounds = [
-                    // 팬파르 사운드
-                    'https://cdn.freesound.org/previews/316/316847_5123451-lq.mp3',
-                    // 성공 사운드
-                    'https://cdn.freesound.org/previews/423/423663_8418827-lq.mp3',
-                    // 승리 사운드
-                    'https://cdn.freesound.org/previews/270/270333_5123451-lq.mp3'
-                ];
-                
-                // 랜덤으로 하나 선택해서 재생
-                const selectedSound = celebrationSounds[Math.floor(Math.random() * celebrationSounds.length)];
-                const audio = new Audio();
-                audio.volume = 0.4;
-                audio.src = selectedSound;
-                
-                // CORS 문제나 로딩 실패 시 백업 사운드 사용
-                audio.onerror = () => {
-                    console.log('External audio failed, using backup');
-                    playBackupResultSound();
-                };
-                
-                // 자동 재생이 차단된 경우 백업 사운드 사용
-                audio.play().catch((error) => {
-                    console.log('Audio autoplay blocked or failed:', error);
-                    playBackupResultSound();
-                });
-
-                // 추가 반짝이 효과음 (1초 후)
-                setTimeout(() => {
-                    try {
-                        const sparkleAudio = new Audio();
-                        sparkleAudio.volume = 0.2;
-                        sparkleAudio.src = 'https://cdn.freesound.org/previews/316/316847_5123451-lq.mp3';
-                        sparkleAudio.play().catch(() => {});
-                    } catch (e) {}
-                }, 1000);
-
-            } catch (e) {
-                console.log('Audio not supported, using backup');
-                playBackupResultSound();
-            }
-        }
-
-        function playBackupResultSound() {
-            try {
-                const audioCtx = createAudioContext();
-                
-                // 축하 멜로디 (도-미-솔-도)
-                const notes = [261.63, 329.63, 392.00, 523.25];
-                const timing = [0, 0.2, 0.4, 0.6];
-                
-                notes.forEach((freq, index) => {
-                    const oscillator = audioCtx.createOscillator();
-                    const gainNode = audioCtx.createGain();
-                    
-                    oscillator.connect(gainNode);
-                    gainNode.connect(audioCtx.destination);
-                    
-                    oscillator.frequency.value = freq;
-                    oscillator.type = 'sine';
-                    
-                    const startTime = audioCtx.currentTime + timing[index];
-                    gainNode.gain.setValueAtTime(0, startTime);
-                    gainNode.gain.linearRampToValueAtTime(0.2, startTime + 0.05);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 0.3);
-                    
-                    oscillator.start(startTime);
-                    oscillator.stop(startTime + 0.3);
-                });
-
-                // 반짝이는 효과음 추가
-                setTimeout(() => {
-                    for (let i = 0; i < 5; i++) {
-                        setTimeout(() => {
-                            const osc = audioCtx.createOscillator();
-                            const gain = audioCtx.createGain();
-                            
-                            osc.connect(gain);
-                            gain.connect(audioCtx.destination);
-                            
-                            osc.frequency.value = 800 + Math.random() * 400;
-                            osc.type = 'sine';
-                            
-                            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-                            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-                            
-                            osc.start();
-                            osc.stop(audioCtx.currentTime + 0.1);
-                        }, i * 50);
-                    }
-                }, 800);
-            } catch (e) {
-                console.log('Backup audio also failed');
-            }
-        }
-
+        let savedData = null;
         const foodData = {
             korean: ['김치찌개', '불고기', '비빔밥', '삼겹살', '냉면', '떡볶이', '김밥', '순두부찌개'],
             chinese: ['짜장면', '짬뽕', '탕수육', '볶음밥', '마파두부', '깐풍기', '양장피', '울면'],
@@ -334,120 +181,134 @@
         const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E9'];
         let currentCategory = 'korean', isSpinning = false, currentRotation = 0;
 
+        function saveData() {
+            try {
+                if (typeof(Storage) !== "undefined" && !location.href.includes('claude.ai')) {
+                    localStorage.setItem('rouletteFoodData', JSON.stringify(foodData));
+                } else {
+                    savedData = JSON.parse(JSON.stringify(foodData));
+                }
+            } catch (e) {
+                savedData = JSON.parse(JSON.stringify(foodData));
+            }
+        }
+
+        function loadData() {
+            try {
+                if (typeof(Storage) !== "undefined" && !location.href.includes('claude.ai')) {
+                    const saved = localStorage.getItem('rouletteFoodData');
+                    if (saved) {
+                        Object.assign(foodData, JSON.parse(saved));
+                        return;
+                    }
+                }
+            } catch (e) {}
+            if (savedData) Object.assign(foodData, savedData);
+        }
+
+        function playSpinSound() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                oscillator.frequency.setValueAtTime(800, audioCtx.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(150, audioCtx.currentTime + 4);
+                gainNode.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 4);
+                oscillator.type = 'sawtooth';
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + 4);
+            } catch (e) {}
+        }
+
+        function playResultSound() {
+            try {
+                const sounds = [
+                    'https://cdn.freesound.org/previews/316/316847_5123451-lq.mp3',
+                    'https://cdn.freesound.org/previews/423/423663_8418827-lq.mp3'
+                ];
+                const audio = new Audio();
+                audio.volume = 0.3;
+                audio.src = sounds[Math.floor(Math.random() * sounds.length)];
+                audio.onerror = playBackupSound;
+                audio.play().catch(playBackupSound);
+            } catch (e) {
+                playBackupSound();
+            }
+        }
+
+        function playBackupSound() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const notes = [261.63, 329.63, 392.00, 523.25];
+                notes.forEach((freq, index) => {
+                    const oscillator = audioCtx.createOscillator();
+                    const gainNode = audioCtx.createGain();
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioCtx.destination);
+                    oscillator.frequency.value = freq;
+                    oscillator.type = 'sine';
+                    const startTime = audioCtx.currentTime + index * 0.2;
+                    gainNode.gain.setValueAtTime(0, startTime);
+                    gainNode.gain.linearRampToValueAtTime(0.15, startTime + 0.05);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 0.3);
+                    oscillator.start(startTime);
+                    oscillator.stop(startTime + 0.3);
+                });
+            } catch (e) {}
+        }
+
         function createFireworks() {
-            // 중심에서 폭죽처럼 터지는 효과
             const centerX = window.innerWidth / 2;
             const centerY = window.innerHeight / 2;
+            const petalColors = ['#FFB6C1', '#FFC0CB', '#FFE4E1', '#FFCCCB', '#FFE4B5', '#E0BBE4'];
             
-            // 첫 번째 폭발 - 작은 꽃가루들
-            for (let i = 0; i < 150; i++) {
+            for (let i = 0; i < 100; i++) {
                 const petal = document.createElement('div');
-                const shapes = ['circle', 'oval', 'leaf', 'star'];
-                const shape = shapes[Math.floor(Math.random() * shapes.length)];
-                
-                let shapeStyle = '';
-                if (shape === 'circle') {
-                    const size = Math.random() * 6 + 3;
-                    shapeStyle = `width:${size}px;height:${size}px;border-radius:50%;`;
-                } else if (shape === 'oval') {
-                    shapeStyle = `width:${Math.random()*8+4}px;height:${Math.random()*5+3}px;border-radius:50%;`;
-                } else if (shape === 'leaf') {
-                    shapeStyle = `width:${Math.random()*6+3}px;height:${Math.random()*8+4}px;border-radius:50% 0 50% 0;`;
-                } else { // star
-                    shapeStyle = `width:${Math.random()*5+3}px;height:${Math.random()*5+3}px;clip-path:polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);`;
-                }
-                
-                const petalColors = [
-                    '#FFB6C1', '#FFC0CB', '#FFE4E1', '#FFCCCB', '#FFE4B5', '#E0BBE4', 
-                    '#957DAD', '#D291BC', '#FEC8D8', '#FFDFD3', '#C7CEEA', '#B4F8C8', 
-                    '#A0E7E5', '#FFE5CC', '#FFABAB', '#F8BBD9', '#E4C1F9', '#A8E6CF'
-                ];
-                
-                petal.style.cssText = `position:absolute;${shapeStyle}
-                    background:${petalColors[Math.floor(Math.random()*petalColors.length)]};
-                    pointer-events:none;z-index:1500;opacity:1;box-shadow:0 2px 8px rgba(0,0,0,0.3);
-                    left:${centerX}px;top:${centerY}px`;
+                const size = Math.random() * 5 + 2;
+                petal.style.cssText = `position:fixed;width:${size}px;height:${size}px;border-radius:50%;background:${petalColors[Math.floor(Math.random() * petalColors.length)]};pointer-events:none;z-index:1500;opacity:1;left:${centerX}px;top:${centerY}px`;
                 document.body.appendChild(petal);
-                
-                // 폭죽처럼 사방으로 터지는 효과
-                const angle = (Math.PI * 2 * i) / 150 + Math.random() * 0.5;
-                const velocity = 150 + Math.random() * 200; // 더 빠른 초기 속도
-                const endX = Math.cos(angle) * velocity;
-                const endY = Math.sin(angle) * velocity;
-                
+                const angle = Math.PI * 2 * i / 100 + Math.random() * 0.5;
+                const velocity = 80 + Math.random() * 120;
                 gsap.to(petal, {
-                    x: endX, y: endY + Math.random() * 300, // 중력 효과
-                    rotation: Math.random() * 720 + 360,
-                    opacity: 0, scale: Math.random() * 0.3 + 0.1,
-                    duration: 2.5 + Math.random() * 2, 
-                    ease: "power3.out", // 폭죽 같은 감속
-                    onComplete: () => { if(document.body.contains(petal)) document.body.removeChild(petal); }
+                    x: Math.cos(angle) * velocity,
+                    y: Math.sin(angle) * velocity + Math.random() * 150,
+                    rotation: Math.random() * 360,
+                    opacity: 0,
+                    scale: 0.1,
+                    duration: 2 + Math.random() * 1.5,
+                    ease: "power3.out",
+                    onComplete: () => {
+                        if (document.body.contains(petal)) document.body.removeChild(petal);
+                    }
                 });
             }
             
-            // 두 번째 폭발 - 큰 꽃가루들 (0.2초 후)
-            setTimeout(() => {
-                for (let i = 0; i < 50; i++) {
-                    const bigPetal = document.createElement('div');
-                    const size = Math.random() * 12 + 8;
-                    bigPetal.style.cssText = `position:absolute;width:${size}px;height:${size}px;
-                        background:radial-gradient(circle, #FF6B6B, #FFB6C1);border-radius:50%;
-                        pointer-events:none;z-index:1500;opacity:0.9;
-                        left:${centerX}px;top:${centerY}px;
-                        box-shadow:0 4px 15px rgba(255,107,107,0.5)`;
-                    document.body.appendChild(bigPetal);
-                    
-                    const angle = (Math.PI * 2 * i) / 50;
-                    const velocity = 100 + Math.random() * 150;
-                    
-                    gsap.to(bigPetal, {
-                        x: Math.cos(angle) * velocity, 
-                        y: Math.sin(angle) * velocity + Math.random() * 200,
-                        rotation: Math.random() * 360, opacity: 0, scale: 0.2,
-                        duration: 3 + Math.random() * 1.5, ease: "power2.out",
-                        onComplete: () => { if(document.body.contains(bigPetal)) document.body.removeChild(bigPetal); }
-                    });
-                }
-            }, 200);
-            
-            // 세 번째 폭발 - 반짝이 효과 (0.4초 후)
-            setTimeout(() => {
-                for (let i = 0; i < 30; i++) {
-                    const sparkle = document.createElement('div');
-                    sparkle.style.cssText = `position:absolute;width:3px;height:3px;
-                        background:#FFD700;border-radius:50%;pointer-events:none;z-index:1600;
-                        left:${centerX}px;top:${centerY}px;box-shadow:0 0 10px #FFD700`;
-                    document.body.appendChild(sparkle);
-                    
-                    const angle = Math.random() * Math.PI * 2;
-                    const velocity = 200 + Math.random() * 100;
-                    
-                    gsap.to(sparkle, {
-                        x: Math.cos(angle) * velocity, 
-                        y: Math.sin(angle) * velocity,
-                        opacity: 0, scale: 2,
-                        duration: 1.5 + Math.random() * 1, ease: "power2.out",
-                        onComplete: () => { if(document.body.contains(sparkle)) document.body.removeChild(sparkle); }
-                    });
-                }
-            }, 400);
+            if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
         }
 
         function createPieSlice(centerX, centerY, radius, startAngle, endAngle, color, text) {
-            const startRad = startAngle * Math.PI / 180, endRad = endAngle * Math.PI / 180;
-            const x1 = centerX + radius * Math.cos(startRad), y1 = centerY + radius * Math.sin(startRad);
-            const x2 = centerX + radius * Math.cos(endRad), y2 = centerY + radius * Math.sin(endRad);
+            const startRad = startAngle * Math.PI / 180;
+            const endRad = endAngle * Math.PI / 180;
+            const x1 = centerX + radius * Math.cos(startRad);
+            const y1 = centerY + radius * Math.sin(startRad);
+            const x2 = centerX + radius * Math.cos(endRad);
+            const y2 = centerY + radius * Math.sin(endRad);
             const largeArcFlag = endAngle - startAngle <= 180 ? "0" : "1";
-            const pathData = `M ${centerX} ${centerY} L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2} Z`;
             
             const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-            path.setAttribute('d', pathData);
+            path.setAttribute('d', `M ${centerX} ${centerY} L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2} Z`);
             path.setAttribute('fill', color);
             path.setAttribute('stroke', 'white');
             path.setAttribute('stroke-width', '2');
             
-            const midAngle = (startAngle + endAngle) / 2, midRad = midAngle * Math.PI / 180;
-            const textRadius = radius * 0.7, textX = centerX + textRadius * Math.cos(midRad), textY = centerY + textRadius * Math.sin(midRad);
+            const midAngle = (startAngle + endAngle) / 2;
+            const midRad = midAngle * Math.PI / 180;
+            const textRadius = radius * 0.65;
+            const textX = centerX + textRadius * Math.cos(midRad);
+            const textY = centerY + textRadius * Math.sin(midRad);
             const textElement = document.createElementNS('http://www.w3.org/2000/svg', 'text');
             textElement.setAttribute('x', textX);
             textElement.setAttribute('y', textY);
@@ -456,18 +317,20 @@
             let textRotation = midAngle;
             if (textRotation > 90 && textRotation < 270) textRotation += 180;
             textElement.setAttribute('transform', `rotate(${textRotation} ${textX} ${textY})`);
-            return { path, textElement };
+            return { path: path, textElement: textElement };
         }
 
         function createRoulette() {
-            const foods = foodData[currentCategory], sectionAngle = 360 / foods.length;
+            const foods = foodData[currentCategory];
+            const sectionAngle = 360 / foods.length;
             const svg = document.getElementById('rouletteSvg');
             svg.innerHTML = '';
             foods.forEach((food, index) => {
-                const startAngle = index * sectionAngle - 90, endAngle = (index + 1) * sectionAngle - 90;
-                const { path, textElement } = createPieSlice(200, 200, 180, startAngle, endAngle, colors[index % colors.length], food);
-                svg.appendChild(path);
-                svg.appendChild(textElement);
+                const startAngle = index * sectionAngle - 90;
+                const endAngle = (index + 1) * sectionAngle - 90;
+                const pieSlice = createPieSlice(200, 200, 180, startAngle, endAngle, colors[index % colors.length], food);
+                svg.appendChild(pieSlice.path);
+                svg.appendChild(pieSlice.textElement);
             });
         }
 
@@ -475,88 +338,102 @@
             if (isSpinning) return;
             isSpinning = true;
             const btn = document.getElementById('spinButton');
-            btn.disabled = true; btn.textContent = '돌리는 중...';
+            btn.disabled = true;
+            btn.textContent = '🎰 돌리는 중...';
             
-            // 회전 효과음 재생
+            if (navigator.vibrate) navigator.vibrate(50);
             playSpinSound();
             
-            const foods = foodData[currentCategory], sectionAngle = 360 / foods.length;
-            // 더 많이 돌도록 수정 (15-25바퀴)
-            const totalRotation = currentRotation + (15 + Math.random() * 10) * 360 + Math.random() * 360;
+            const foods = foodData[currentCategory];
+            const sectionAngle = 360 / foods.length;
+            const minSpins = 18;
+            const extraSpins = Math.random() * 12;
+            const totalSpins = minSpins + extraSpins;
+            const finalAngle = Math.random() * 360;
+            const totalRotation = currentRotation + (totalSpins * 360) + finalAngle;
+            const duration = 3.5 + Math.random() * 2;
             const selectedIndex = Math.floor(((360 - totalRotation % 360) % 360) / sectionAngle);
+            
             gsap.to(document.getElementById('rouletteSvg'), {
-                rotation: totalRotation, duration: 6, ease: "power4.out", // 지속시간도 6초로 증가
+                rotation: totalRotation,
+                duration: duration,
+                ease: "power4.out",
                 onComplete: () => {
                     currentRotation = totalRotation % 360;
-                    
-                    // 결과 효과음 재생
                     playResultSound();
-                    
                     createFireworks();
                     setTimeout(() => {
-                        document.getElementById('resultText').innerHTML = `오늘의 메뉴는<br><strong style="color:#ffff00;font-size:2rem;">${foods[selectedIndex]}</strong><br>입니다!`;
+                        document.getElementById('resultText').innerHTML = `오늘의 메뉴는<br><strong style="color:#ffff00;font-size:1.3rem;font-weight:800;">${foods[selectedIndex]}</strong><br>입니다! 🎉`;
                         const popup = document.getElementById('resultPopup');
                         popup.style.display = 'block';
-                        // 3초 후 자동으로 팝업 닫기
-                        setTimeout(() => {
-                            popup.style.display = 'none';
-                        }, 3000);
-                        isSpinning = false; btn.disabled = false; btn.textContent = '다시 돌리기!';
-                    }, 1200);
+                        setTimeout(() => popup.style.display = 'none', 3500);
+                        isSpinning = false;
+                        btn.disabled = false;
+                        btn.textContent = '🎰 다시 돌리기!';
+                    }, 1000);
                 }
             });
         }
 
         function openMenuEditor() {
-            const names = {korean: '한식', chinese: '중식', western: '양식', japanese: '일식', fast: '패스트푸드'};
+            const names = { korean: '한식', chinese: '중식', western: '양식', japanese: '일식', fast: '패스트푸드' };
             document.getElementById('editorTitle').textContent = `${names[currentCategory]} 메뉴 편집`;
             const inputs = document.getElementById('menuInputs');
             inputs.innerHTML = '';
             foodData[currentCategory].forEach(food => {
                 const container = document.createElement('div');
                 container.className = 'input-container';
-                container.innerHTML = `<input type="text" class="menu-item-input" value="${food}" placeholder="메뉴 이름을 입력하세요">
-                    <button class="remove-item-btn" onclick="this.parentElement.remove()">×</button>`;
+                container.innerHTML = `<input type="text" class="menu-item-input" value="${food}" placeholder="메뉴 이름을 입력하세요"><button class="remove-item-btn" onclick="this.parentElement.remove()">×</button>`;
                 inputs.appendChild(container);
             });
             document.getElementById('menuEditor').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeMenuEditor() {
+            document.getElementById('menuEditor').style.display = 'none';
+            document.body.style.overflow = 'auto';
         }
 
         function saveMenu() {
             const inputs = document.querySelectorAll('.menu-item-input');
             const newMenu = Array.from(inputs).map(input => input.value.trim()).filter(v => v);
-            if (newMenu.length === 0) { alert('최소 1개의 메뉴는 있어야 합니다!'); return; }
+            if (newMenu.length === 0) {
+                alert('최소 1개의 메뉴는 있어야 합니다!');
+                return;
+            }
             foodData[currentCategory] = newMenu;
-            saveFoodData(); // localStorage에 저장
+            saveData();
             createRoulette();
-            document.getElementById('menuEditor').style.display = 'none';
+            closeMenuEditor();
+            if (navigator.vibrate) navigator.vibrate(30);
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            // 저장된 데이터 로드
-            loadFoodData();
+            loadData();
             
             document.getElementById('editMenuBtn').onclick = openMenuEditor;
             document.getElementById('addItemBtn').onclick = () => {
                 const container = document.createElement('div');
                 container.className = 'input-container';
-                container.innerHTML = `<input type="text" class="menu-item-input" placeholder="메뉴 이름을 입력하세요">
-                    <button class="remove-item-btn" onclick="this.parentElement.remove()">×</button>`;
+                container.innerHTML = '<input type="text" class="menu-item-input" placeholder="메뉴 이름을 입력하세요"><button class="remove-item-btn" onclick="this.parentElement.remove()">×</button>';
                 document.getElementById('menuInputs').appendChild(container);
             };
             document.getElementById('saveMenuBtn').onclick = saveMenu;
-            document.getElementById('cancelEditBtn').onclick = () => document.getElementById('menuEditor').style.display = 'none';
-            document.getElementById('menuEditor').onclick = e => { if (e.target.id === 'menuEditor') e.target.style.display = 'none'; };
+            document.getElementById('cancelEditBtn').onclick = closeMenuEditor;
+            document.getElementById('menuEditor').onclick = e => {
+                if (e.target.id === 'menuEditor') closeMenuEditor();
+            };
             document.querySelectorAll('.category-btn').forEach(btn => btn.onclick = () => {
                 if (isSpinning) return;
                 document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 currentCategory = btn.dataset.category;
                 createRoulette();
+                if (navigator.vibrate) navigator.vibrate(20);
             });
             document.getElementById('spinButton').onclick = spinRoulette;
             createRoulette();
-            document.addEventListener('keydown', e => { if (e.code === 'Space' && !isSpinning) { e.preventDefault(); spinRoulette(); } });
         });
     </script>
 </body>
