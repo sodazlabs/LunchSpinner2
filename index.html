@@ -45,7 +45,8 @@
         .roulette-svg { width: 100%; height: 100%; transform-origin: center; }
         .roulette-text { 
             font-family: -apple-system, BlinkMacSystemFont, sans-serif; 
-            font-weight: 700; font-size: 12px; fill: white; text-anchor: middle; dominant-baseline: middle; 
+            font-weight: 900; font-size: 12px; fill: black; text-anchor: middle; dominant-baseline: middle;
+            text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
         }
         .roulette-center {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
@@ -346,17 +347,24 @@
             
             const foods = foodData[currentCategory];
             const sectionAngle = 360 / foods.length;
-            const minSpins = 18;
-            const extraSpins = Math.random() * 12;
+            
+            // 회전 설정 개선 - 최소 3초 보장
+            const minSpins = 20; // 최소 20바퀴
+            const extraSpins = Math.random() * 15; // 추가 0-15바퀴
             const totalSpins = minSpins + extraSpins;
             const finalAngle = Math.random() * 360;
             const totalRotation = currentRotation + (totalSpins * 360) + finalAngle;
-            const duration = 3.5 + Math.random() * 2;
+            
+            // 지속시간 계산 - 최소 3초, 최대 6초
+            const minDuration = 3;
+            const maxDuration = 6;
+            const duration = minDuration + (totalSpins - minSpins) / 15 * (maxDuration - minDuration);
+            
             const selectedIndex = Math.floor(((360 - totalRotation % 360) % 360) / sectionAngle);
             
             gsap.to(document.getElementById('rouletteSvg'), {
                 rotation: totalRotation,
-                duration: duration,
+                duration: Math.max(duration, minDuration), // 최소 3초 보장
                 ease: "power4.out",
                 onComplete: () => {
                     currentRotation = totalRotation % 360;
